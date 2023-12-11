@@ -9,8 +9,8 @@ export  class GenericController<T> {
     this.genericService.save(item);
   }
 
-  @Get(':id')
-  async getById(id: string): Promise<T | undefined> {
+  @Get('/get/:id')
+  async getById(@Param('id') id: string): Promise<T | undefined> {
     return await this.genericService.getById(parseInt(id, 10));
   }
 
@@ -19,12 +19,17 @@ export  class GenericController<T> {
     return await this.genericService.getAll();
   }
 
-  @Delete(':id')
-  delete(@Param('id') id: string): void {
-    this.genericService.delete(parseInt(id, 10));
+  @Delete('/:id')
+  delete(@Param('id') id: string): string {
+    try {
+      this.genericService.delete(parseInt(id, 10));
+      return 'Item deletado com sucesso!';
+    } catch (error) {
+      return 'Erro ao deletar item!';
+    }
   }
 
-  @Put(':id')
+  @Put('/:id')
   update(@Param('id') id: string, @Body() updatedItem: T): void {
     this.genericService.update(parseInt(id, 10), updatedItem);
   }

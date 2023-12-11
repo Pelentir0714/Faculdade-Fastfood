@@ -23,7 +23,8 @@ const login = (user) => {
     .post(BASE_URL + "/user/login", user)
     .then((response) => {
       if (response.data) {
-        localStorage.setItem("token", JSON.stringify(response.data));
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
         toast.success("Usuário logado com sucesso!");
         window.location.href = '/';
       } else {
@@ -41,15 +42,41 @@ const logout = () => {
   localStorage.removeItem("token")
 };
 
-const isAuthenticated = () => {
-  return localStorage.getItem("token") ? true : false;
+const isAuthenticated = async () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return false;
+  }
+  const valid = await axios.get(`${BASE_URL}/user/getValidUser/${token}`);
+  return valid;
 };
+
+const resetPassword = (email) => { 
+  debugger;
+  return axios
+  .post(BASE_URL + "/email/sendEmail", email)
+  .then((response) => {
+    debugger;
+    if (response.data) {
+      toast.success("Email enviado com sucesso!");
+      window.location.href = '/';
+    } else {
+      toast.error("Email não enviado!");
+      return response.data;
+    }
+  })
+  .catch(() => {
+    toast.error("Email não enviado!");
+    return false;
+  });
+}
 
 const AuthService = {
   signup,
   login,
   logout,
   isAuthenticated,
+  resetPassword
 };
 
 export default AuthService;

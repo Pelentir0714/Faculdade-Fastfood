@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import './SideBar.css'; 
 import PainelPage from '../Painel/PainelPage';
 import AuthService from '../../services/Auth/AuthService';
+import GridProdutos from '../produtos/Produtos';
+import GridPedidos from '../Pedidos/Pedido';
 
 const Sidebar = () => {
   const [isSidebarClosed, setIsSidebarClosed] = useState(false);
@@ -27,9 +29,9 @@ const Sidebar = () => {
       case 'inicio':
         return <PainelPage />;
       case 'pedidos':
-        return <PainelPage />;
-      case 'relatorios':
-        return <PainelPage />;
+        return < GridPedidos/>;
+      case 'cadastro':
+        return <GridProdutos />;
       default:
         return <PainelPage />;
     }
@@ -61,28 +63,22 @@ const Sidebar = () => {
               </li>
               <li className="nav-link p-0"  onClick={() => handleNavItemClick('pedidos')}>
                 <a href="#">
-                  <i className="fa-solid fa-screwdriver-wrench icon"></i>
+                <i className="fa-regular fa-note-sticky icon"></i>
                   <span className="text nav-text">Pedidos</span>
                 </a>
               </li>
-              <li className="nav-link p-0"  onClick={() => handleNavItemClick('relatorios')}>
+              <li className="nav-link p-0"  onClick={() => handleNavItemClick('cadastro')}>
                 <a href="#">
-                  <i className="fa-solid fa-user icon"></i>
-                  <span className="text nav-text">Relatorios</span>
+                <i className="fa-solid fa-utensils icon"></i>
+                  <span className="text nav-text">Produtos</span>
                 </a>
               </li>
             </ul>
-            <li className="github-box p-0" onClick={() => setIsSidebarClosed(false)}>
-                <a href="#" target="_blank">
-                  <i className="fa-brands fa-github icon"></i>
-                  <span className="text nav-text">GitHub</span>
-                </a>
-            </li>
           </div>
           <div className="botton-content">
             <li className="logout-box p-0" onClick={() => AuthService.logout()}>
                 <a href="#" target="_blank">
-                    <i class="icon fa-solid fa-door-open"></i>
+                    <i className="icon fa-solid fa-door-open"></i>
                   <span className="text nav-text">Sair</span>
                 </a>
             </li>

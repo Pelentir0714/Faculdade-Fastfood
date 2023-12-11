@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import { Usuario } from '../model/usuario.model';
 import { JwtService } from '@nestjs/jwt';
 import { GenericService } from './GenericService';
@@ -9,7 +9,7 @@ import * as cpfValidator from 'cpf-cnpj-validator';
 
 
 @Injectable()
-export class UsuarioService extends GenericService<Usuario> { 
+export class UsuarioService extends GenericService<Usuario> {
   constructor(
     @InjectRepository(Usuario)
     private readonly userRepository: Repository<Usuario>,
@@ -18,20 +18,29 @@ export class UsuarioService extends GenericService<Usuario> {
     super(userRepository)
   }
 
-  async authenticateUser(credentials: { email: string; senha: string }): Promise<string> {
-    const user = await this.userRepository.findOneBy({ email: credentials.email });
+  async authenticateUser(credentials: { email: string; senha: string }): Promise<[string, Usuario]> {
+    const user = await this.userRepository.findOne({
+      where: { email: credentials.email },
+      relations: ['endereco'],
+    });
 
     if (user && user.senha === credentials.senha) {
       const payload = { email: user.email, sub: user.id };
-      return this.jwtService.sign(payload);
+      const token = this.jwtService.sign(payload);
+      return [token, user];
     }
 
     return null;
   }
 
-  async validateUserByJwt(token: string): Promise<Usuario> {
-    const decoded = this.jwtService.verify(token);
-    return this.userRepository.findOne(decoded.sub);
+  async validateUserByJwt(token: string): Promise<Boolean> {
+    let decoded = null
+    try {
+      decoded = this.jwtService.verify(token);
+    } catch (error) {
+
+    }
+    return decoded ? true : false;
   }
 
   validarCpf(cpf: string): boolean {
@@ -51,4 +60,29 @@ export class UsuarioService extends GenericService<Usuario> {
     const user = await this.  userRepository.findOneBy({ email: email });
     return user ? true : false;
   }
+
+  getCompanies() {
+    return this.userRepository.find({
+      where: {
+        cpf_cnpj: Raw(alias => `${alias} IS NOT NULL AND LENGTH(${alias}) >= 15`), 
+      },
+    });
+  } 
+
+  async getById(id: number): Promise<Usuario | undefined> {
+    return this.userRepository.findOne({
+      where: { id: id },
+      relations: ['endereco'],
+    });
+  }
+
+  async update(id: string | number, updatedItem): Promise<void> {
+    const user = await this.userRepository.findOneById(id);
+    user.email = updatedItem.email;
+    user.nome = updatedItem.name;
+    user.telefone = updatedItem.telefone;
+
+    await this.userRepository.update(id, user);
+  }
+
 }
